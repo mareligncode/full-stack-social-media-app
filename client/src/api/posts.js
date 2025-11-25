@@ -4,10 +4,10 @@ const getUserLikedPosts = async (likerId, token, query) => {
   try {
     const res = await fetch(
       BASE_URL +
-        "api/posts/liked/" +
-        likerId +
-        "?" +
-        new URLSearchParams(query),
+      "api/posts/liked/" +
+      likerId +
+      "?" +
+      new URLSearchParams(query),
       {
         headers: {
           "x-access-token": token,
@@ -53,12 +53,12 @@ const getUserLikes = async (postId, anchor) => {
   try {
     const res = await fetch(
       BASE_URL +
-        "api/posts/like/" +
-        postId +
-        "/users?" +
-        new URLSearchParams({
-          anchor,
-        })
+      "api/posts/like/" +
+      postId +
+      "/users?" +
+      new URLSearchParams({
+        anchor,
+      })
     );
 
     return await res.json();
@@ -67,37 +67,54 @@ const getUserLikes = async (postId, anchor) => {
   }
 };
 
-const createPost = async (post, user) => {
+const createPost = async (formData, user) => {
   try {
+    const isFormData = formData instanceof FormData;
+
+    const headers = {
+      "x-access-token": user.token,
+    };
+
+    // Only set Content-Type if it's not FormData
+    if (!isFormData) {
+      headers["Content-Type"] = "application/json";
+    }
+
     const res = await fetch(BASE_URL + "api/posts", {
       method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        "x-access-token": user.token,
-      },
-      body: JSON.stringify(post),
+      headers: headers,
+      body: isFormData ? formData : JSON.stringify(formData),
     });
+
     return await res.json();
   } catch (err) {
     console.log(err);
+    return { error: err.message };
   }
 };
 
 const updatePost = async (postId, user, data) => {
   try {
+    const isFormData = data instanceof FormData;
+
+    const headers = {
+      "x-access-token": user.token,
+    };
+
+    // Only set Content-Type if it's not FormData
+    if (!isFormData) {
+      headers["Content-Type"] = "application/json";
+    }
+
     const res = await fetch(BASE_URL + "api/posts/" + postId, {
       method: "PATCH",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        "x-access-token": user.token,
-      },
-      body: JSON.stringify(data),
+      headers: headers,
+      body: isFormData ? data : JSON.stringify(data),
     });
     return res.json();
   } catch (err) {
     console.log(err);
+    return { error: err.message };
   }
 };
 
