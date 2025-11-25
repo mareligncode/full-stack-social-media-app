@@ -20,7 +20,7 @@ const httpServer = http.createServer(app);
 const io = require("socket.io")(httpServer, {
   cors: {
     origin: [
-      "http://localhost:3000",
+      "https://full-stack-social-media-app-view.vercel.app",
       "https://post-it-heroku.herokuapp.com"
     ],
     methods: ["GET", "POST"],
@@ -38,7 +38,14 @@ mongoose
   .catch((err) => console.log("MongoDB error:", err));
 
 // ------------------- MIDDLEWARE -------------------
-app.use(cors());
+app.use(cors({
+  origin: [
+    "https://full-stack-social-media-app-view.vercel.app",
+    "https://post-it-heroku.herokuapp.com"
+  ],
+  credentials: true
+}));
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
