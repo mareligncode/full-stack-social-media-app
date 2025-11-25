@@ -1,23 +1,18 @@
-import { Button, IconButton, Typography, useTheme } from "@mui/material";
-import { Box, compose } from "@mui/system";
 import React, { useState } from "react";
-import { AiFillEdit, AiOutlineLine, AiOutlinePlus } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
 import { isLoggedIn } from "../helpers/authHelper";
 import CommentEditor from "./CommentEditor";
 import ContentDetails from "./ContentDetails";
-import HorizontalStack from "./util/HorizontalStack";
 import { deleteComment, updateComment } from "../api/posts";
 import ContentUpdateEditor from "./ContentUpdateEditor";
 import Markdown from "./Markdown";
 import { MdCancel } from "react-icons/md";
-import { BiReply, BiTrash } from "react-icons/bi";
-import { BsReply, BsReplyFill } from "react-icons/bs";
+import { BiTrash } from "react-icons/bi";
+import { BsReplyFill } from "react-icons/bs";
+import { AiFillEdit, AiOutlineLine, AiOutlinePlus } from "react-icons/ai";
 import Moment from "react-moment";
 
 const Comment = (props) => {
-  const theme = useTheme();
-  const iconColor = theme.palette.primary.main;
   const { depth, addComment, removeComment, editComment } = props;
   const commentData = props.comment;
   const [minimised, setMinimised] = useState(depth % 4 === 3);
@@ -38,17 +33,11 @@ const Comment = (props) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const content = e.target.content.value;
-
     await updateComment(comment._id, user, { content });
-
     const newCommentData = { ...comment, content, edited: true };
-
     setComment(newCommentData);
-
     editComment(newCommentData);
-
     setEditing(false);
   };
 
@@ -57,138 +46,175 @@ const Comment = (props) => {
     removeComment(comment);
   };
 
-  let style = {
-    backgroundColor: theme.palette.grey[100],
-    borderRadius: 1.5,
-    mb: theme.spacing(2),
-    padding: theme.spacing(0),
+  // Enhanced styling based on depth
+  const getContainerClass = () => {
+    const baseClass = "mb-3 rounded";
+    if (props.profile) return `${baseClass} border-start border-primary ps-3`;
+    
+    if (depth === 0) return `${baseClass} border bg-light`;
+    return `${baseClass} border bg-white`;
   };
 
-  if (depth % 2 === 1) {
-    style.backgroundColor = "white";
-  }
+  const getDepthMargin = () => {
+    if (depth === 0) return "";
+    return `ms-${Math.min(depth * 3, 12)}`;
+  };
 
   return (
-    <Box sx={style}>
-      <Box
-        sx={{
-          pl: theme.spacing(2),
-          pt: theme.spacing(1),
-          pb: theme.spacing(1),
-          pr: 1,
-        }}
-      >
-        {props.profile ? (
-          <Box>
-            <Typography variant="h6">
-              <Link underline="hover" to={"/posts/" + comment.post._id}>
-                {comment.post.title}
-              </Link>
-            </Typography>
-            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-              <Moment fromNow>{comment.createdAt}</Moment>{" "}
-              {comment.edited && <>(Edited)</>}
-            </Typography>
-          </Box>
-        ) : (
-          <HorizontalStack justifyContent="space-between">
-            <HorizontalStack>
+    <div className={`${getContainerClass()} ${getDepthMargin()}`}>
+      
+      {/* Profile View */}
+      {props.profile ? (
+        <div className="p-2">
+          <h6 className="mb-1">
+            <Link 
+              to={"/posts/" + comment.post._id}
+              className="text-decoration-none text-dark fw-semibold hover-primary"
+            >
+              {comment.post.title}
+            </Link>
+          </h6>
+          <div className="d-flex align-items-center gap-2 text-muted">
+            <small>
+              <Moment fromNow>{comment.createdAt}</Moment>
+            </small>
+            {comment.edited && (
+              <span className="badge bg-secondary bg-opacity-25 text-secondary">Edited</span>
+            )}
+          </div>
+        </div>
+      ) : (
+        
+        /* Regular Comment View */
+        <div className="p-3">
+          {/* Header Section */}
+          <div className="d-flex justify-content-between align-items-start mb-2">
+            <div className="d-flex align-items-center gap-2 flex-wrap">
               <ContentDetails
                 username={comment.commenter.username}
                 createdAt={comment.createdAt}
                 edited={comment.edited}
               />
-
-              <IconButton
-                color="primary"
+              
+              {/* Minimize Toggle */}
+              <button
+                className="btn btn-sm btn-light border-0 rounded-circle"
                 onClick={() => setMinimised(!minimised)}
+                title={minimised ? "Expand comment" : "Minimize comment"}
+                style={{ width: '28px', height: '28px' }}
               >
                 {minimised ? (
-                  <AiOutlinePlus size={15} />
+                  <AiOutlinePlus size={12} className="text-muted" />
                 ) : (
-                  <AiOutlineLine size={15} />
+                  <AiOutlineLine size={12} className="text-muted" />
                 )}
-              </IconButton>
-            </HorizontalStack>
+              </button>
+            </div>
+
+            {/* Action Buttons */}
             {!minimised && (
-              <HorizontalStack spacing={1}>
-                <IconButton
-                  variant="text"
-                  size="small"
+              <div className="d-flex align-items-center gap-1">
+                {/* Reply Button */}
+                <button
+                  className={`btn btn-sm ${replying ? 'btn-warning' : 'btn-outline-primary'} border-0`}
                   onClick={handleSetReplying}
+                  title={replying ? "Cancel reply" : "Reply to comment"}
                 >
-                  {!replying ? (
-                    <BsReplyFill color={iconColor} />
+                  {replying ? (
+                    <>
+                      <MdCancel size={14} className="me-1" />
+                      <span className="d-none d-sm-inline">Cancel</span>
+                    </>
                   ) : (
-                    <MdCancel color={iconColor} />
+                    <>
+                      <BsReplyFill size={12} className="me-1" />
+                      <span className="d-none d-sm-inline">Reply</span>
+                    </>
                   )}
-                </IconButton>
+                </button>
+
+                {/* Author/Admin Actions */}
                 {user && (isAuthor || user.isAdmin) && (
-                  <HorizontalStack spacing={1}>
-                    <IconButton
-                      variant="text"
-                      size="small"
+                  <div className="d-flex align-items-center gap-1 ms-1">
+                    {/* Edit Button */}
+                    <button
+                      className={`btn btn-sm ${editing ? 'btn-warning' : 'btn-outline-warning'} border-0`}
                       onClick={() => setEditing(!editing)}
+                      title={editing ? "Cancel edit" : "Edit comment"}
                     >
                       {editing ? (
-                        <MdCancel color={iconColor} />
+                        <MdCancel size={14} />
                       ) : (
-                        <AiFillEdit color={iconColor} />
+                        <AiFillEdit size={13} />
                       )}
-                    </IconButton>
-                    <IconButton
-                      variant="text"
-                      size="small"
+                    </button>
+
+                    {/* Delete Button */}
+                    <button
+                      className="btn btn-sm btn-outline-danger border-0"
                       onClick={handleDelete}
+                      title="Delete comment"
                     >
-                      <BiTrash color={theme.palette.error.main} />
-                    </IconButton>
-                  </HorizontalStack>
+                      <BiTrash size={13} />
+                    </button>
+                  </div>
                 )}
-              </HorizontalStack>
+              </div>
             )}
-          </HorizontalStack>
-        )}
+          </div>
 
-        {!minimised && (
-          <Box sx={{ mt: 1 }} overflow="hidden">
-            {!editing ? (
-              <Markdown content={comment.content} />
-            ) : (
-              <ContentUpdateEditor
-                handleSubmit={handleSubmit}
-                originalContent={comment.content}
-              />
-            )}
+          {/* Comment Content Area */}
+          {!minimised && (
+            <div className="comment-body">
+              
+              {/* Comment Text / Editor */}
+              <div className="mb-3">
+                {!editing ? (
+                  <div className="comment-text p-2 rounded bg-white border">
+                    <Markdown content={comment.content} />
+                  </div>
+                ) : (
+                  <div className="editing-area p-3 bg-light rounded border">
+                    <ContentUpdateEditor
+                      handleSubmit={handleSubmit}
+                      originalContent={comment.content}
+                    />
+                  </div>
+                )}
+              </div>
 
-            {replying && !minimised && (
-              <Box sx={{ mt: 2 }}>
-                <CommentEditor
-                  comment={comment}
-                  addComment={addComment}
-                  setReplying={setReplying}
-                  label="What are your thoughts on this comment?"
-                />
-              </Box>
-            )}
-            {comment.children && (
-              <Box sx={{ pt: theme.spacing(2) }}>
-                {comment.children.map((reply, i) => (
-                  <Comment
-                    key={reply._id}
-                    comment={reply}
-                    depth={depth + 1}
+              {/* Reply Editor */}
+              {replying && (
+                <div className="reply-section mt-3 p-3 bg-light rounded border">
+                  <CommentEditor
+                    comment={comment}
                     addComment={addComment}
-                    removeComment={removeComment}
-                    editComment={editComment}
+                    setReplying={setReplying}
+                    label="What are your thoughts on this comment?"
                   />
-                ))}
-              </Box>
-            )}
-          </Box>
-        )}
-      </Box>
-    </Box>
+                </div>
+              )}
+
+              {/* Nested Comments */}
+              {comment.children && comment.children.length > 0 && (
+                <div className="nested-comments mt-3 pt-2 border-top">
+                  {comment.children.map((reply) => (
+                    <Comment
+                      key={reply._id}
+                      comment={reply}
+                      depth={depth + 1}
+                      addComment={addComment}
+                      removeComment={removeComment}
+                      editComment={editComment}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 

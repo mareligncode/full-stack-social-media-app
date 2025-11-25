@@ -16,7 +16,9 @@ const PostSchema = new mongoose.Schema(
     },
     content: {
       type: String,
-      required: true,
+      required: function () {
+        return !this.media && !this.mediaUrl; // Content not required if media exists
+      },
       maxLength: [8000, "Must be no more than 8000 characters"],
     },
     likeCount: {
@@ -31,6 +33,20 @@ const PostSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // New media fields
+    media: {
+      type: String, // This will store the filename
+      required: false,
+    },
+    mediaUrl: {
+      type: String, // This will store the full URL to the media
+      required: false,
+    },
+    mediaType: {
+      type: String,
+      enum: ["image", "video", "none"],
+      default: "none",
+    },
   },
   { timestamps: true }
 );
@@ -40,7 +56,7 @@ PostSchema.pre("save", function (next) {
     this.title = filter.clean(this.title);
   }
 
-  if (this.content.length > 0) {
+  if (this.content && this.content.length > 0) {
     this.content = filter.clean(this.content);
   }
 
