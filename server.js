@@ -20,7 +20,7 @@ const httpServer = http.createServer(app);
 const io = require("socket.io")(httpServer, {
   cors: {
     origin: [
-      "http://localhost:3000",
+      "https://full-stack-social-media-app-view.vercel.app",
       "https://post-it-heroku.herokuapp.com"
     ],
     methods: ["GET", "POST"],
@@ -38,16 +38,25 @@ mongoose
   .catch((err) => console.log("MongoDB error:", err));
 
 // ------------------- MIDDLEWARE -------------------
-app.use(cors());
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(cors({
+  origin: [
+    "https://full-stack-social-media-app-view.vercel.app",
+    "https://post-it-heroku.herokuapp.com"
+  ],
+  credentials: true
+}));
+
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// ------------------- REQUEST LOGGING MIDDLEWARE -------------------
+// ------------------- REQUEST LOGGING -------------------
 app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
-  console.log('Headers:', req.headers);
-  console.log('Body:', req.body);
+  console.log(
+    `[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`
+  );
+  console.log("Headers:", req.headers);
+  console.log("Body:", req.body);
   next();
 });
 
@@ -57,7 +66,7 @@ app.use("/api/users", users);
 app.use("/api/comments", comments);
 app.use("/api/messages", messages);
 
-// ------------------- ROOT ROUTE FOR TESTING -------------------
+// ------------------- ROOT ROUTE -------------------
 app.get("/", (req, res) => {
   res.json({
     message: "Server is running!",
@@ -69,7 +78,7 @@ app.get("/", (req, res) => {
   });
 });
 
-// ------------------- CATCH ALL UNHANDLED ROUTES -------------------
+// ------------------- 404 HANDLER -------------------
 app.all("*", (req, res) => {
   console.log(`404: Route not found - ${req.method} ${req.originalUrl}`);
   res.status(404).json({
@@ -86,7 +95,7 @@ app.all("*", (req, res) => {
   });
 });
 
-// ------------------- PRODUCTION FRONTEND BUILD -------------------
+// ------------------- PRODUCTION -------------------
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "client/build")));
 
@@ -95,15 +104,15 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-// ------------------- ERROR HANDLING MIDDLEWARE -------------------
+// ------------------- ERROR HANDLER -------------------
 app.use((err, req, res, next) => {
-  console.error('Server Error:', err);
-  res.status(500).json({ error: 'Internal server error' });
+  console.error("Server Error:", err);
+  res.status(500).json({ error: "Internal server error" });
 });
 
 // ------------------- START SERVER -------------------
 const PORT = process.env.PORT || 4000;
 httpServer.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`Test the API at: http://localhost:${PORT}/api/posts`);
+  console.log(`Test API: http://localhost:${PORT}/api/posts`);
 });
