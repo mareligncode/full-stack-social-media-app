@@ -16,33 +16,36 @@ dotenv.config();
 const app = express();
 const httpServer = http.createServer(app);
 
-// ------------------- SOCKET.IO -------------------
+// ------------------- 1. CONFIGURATION -------------------
+// Add all your Vercel URLs here. 
+// ⚠️ IMPORTANT: No trailing slash "/" at the end of URLs!
+const allowedOrigins = [
+  "https://full-stack-social-media-app-view.vercel.app",
+  "https://full-stack-social-media-app-three.vercel.app", // The one you mentioned
+  "http://localhost:3000" // For local testing
+];
+
+// ------------------- 2. SOCKET.IO SETUP -------------------
 const io = require("socket.io")(httpServer, {
   cors: {
-    origin: [
-      "https://full-stack-social-media-app-view.vercel.app",
-      "https://post-it-heroku.herokuapp.com"
-    ],
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
-    credentials: true
+    credentials: true,
   },
 });
 
 io.use(authSocket);
 io.on("connection", (socket) => socketServer(socket));
 
-// ------------------- DATABASE CONNECTION -------------------
+// ------------------- 3. DATABASE CONNECTION -------------------
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log("MongoDB error:", err));
 
-// ------------------- MIDDLEWARE -------------------
+// ------------------- 4. MIDDLEWARE -------------------
 app.use(cors({
-  origin: [
-    "https://full-stack-social-media-app-view.vercel.app",
-    "https://post-it-heroku.herokuapp.com"
-  ],
+  origin: allowedOrigins,
   credentials: true
 }));
 
@@ -50,69 +53,25 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// ------------------- REQUEST LOGGING -------------------
+// ------------------- 5. REQUEST LOGGING -------------------
 app.use((req, res, next) => {
-  console.log(
-    `[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`
-  );
-  console.log("Headers:", req.headers);
-  console.log("Body:", req.body);
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
   next();
 });
 
-// ------------------- API ROUTES -------------------
+// ------------------- 6. API ROUTES -------------------
 app.use("/api/posts", posts);
 app.use("/api/users", users);
 app.use("/api/comments", comments);
 app.use("/api/messages", messages);
 
-// ------------------- ROOT ROUTE -------------------
+// ------------------- 7. ROOT ROUTE (Health Check) -------------------
 app.get("/", (req, res) => {
-  res.json({
-    message: "Server is running!",
-    endpoints: {
-      posts: "/api/posts",
-      users: "/api/users",
-      comments: "/api/comments"
-    }
-  });
+  res.json({ message: "Render Backend is Running!" });
 });
 
-// ------------------- 404 HANDLER -------------------
-app.all("*", (req, res) => {
-  console.log(`404: Route not found - ${req.method} ${req.originalUrl}`);
-  res.status(404).json({
-    error: "Route not found",
-    method: req.method,
-    url: req.originalUrl,
-    availableEndpoints: [
-      "GET /api/posts",
-      "POST /api/posts",
-      "GET /api/posts/:id",
-      "PATCH /api/posts/:id",
-      "DELETE /api/posts/:id"
-    ]
-  });
-});
-
-// ------------------- PRODUCTION -------------------
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "client/build")));
-
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "client/build/index.html"));
-  });
-}
-
-// ------------------- ERROR HANDLER -------------------
-app.use((err, req, res, next) => {
-  console.error("Server Error:", err);
-  res.status(500).json({ error: "Internal server error" });
-});
-
-// ------------------- START SERVER -------------------
+// ------------------- 8. START SERVER -------------------
 const PORT = process.env.PORT || 4000;
 httpServer.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`Test API: http://localhost:${PORT}/api/posts`);
+  console.log(`Server running on port ${PORT}`);
 });
