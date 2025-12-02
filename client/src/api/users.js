@@ -2,7 +2,7 @@ import { BASE_URL } from "../config";
 
 const signup = async (user) => {
   try {
-    const res = await fetch(BASE_URL + "api/users/register", {
+    const res = await fetch(BASE_URL + "/api/users/register", {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -10,15 +10,23 @@ const signup = async (user) => {
       },
       body: JSON.stringify(user),
     });
+
+    if (!res.ok) {
+      const errData = await res.json();
+      return { error: errData.message || "Signup failed" };
+    }
+
     return await res.json();
   } catch (err) {
-    console.log(err);
+    console.log("Signup API error:", err);
+    return { error: "Server not responding" };
   }
 };
 
+
 const login = async (user) => {
   try {
-    const res = await fetch(BASE_URL + "api/users/login", {
+    const res = await fetch(BASE_URL + "/api/users/login", {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -26,11 +34,20 @@ const login = async (user) => {
       },
       body: JSON.stringify(user),
     });
-    return await res.json();
+
+    // If response is not OK, return error object
+    if (!res.ok) {
+      const errData = await res.json();
+      return { error: errData.message || "Login failed" };
+    }
+
+    return await res.json(); // Successful login returns { token, user, etc. }
   } catch (err) {
-    console.log(err);
+    console.log("Login API error:", err);
+    return { error: "Server not responding" }; // Return object even on network failure
   }
 };
+
 
 const getUser = async (params) => {
   try {

@@ -2,7 +2,7 @@ import { BASE_URL } from "../config";
 
 const getConversations = async (user) => {
   try {
-    const res = await fetch(BASE_URL + "api/messages", {
+    const res = await fetch(BASE_URL + "/api/messages", {
       headers: {
         "x-access-token": user.token,
       },
@@ -15,7 +15,7 @@ const getConversations = async (user) => {
 
 const getMessages = async (user, conversationId) => {
   try {
-    const res = await fetch(BASE_URL + "api/messages/" + conversationId, {
+    const res = await fetch(BASE_URL + "/api/messages/" + conversationId, {
       headers: {
         "x-access-token": user.token,
       },
@@ -28,7 +28,7 @@ const getMessages = async (user, conversationId) => {
 
 const sendMessage = async (user, message, recipientId) => {
   try {
-    const res = await fetch(BASE_URL + "api/messages/" + recipientId, {
+    const res = await fetch(BASE_URL + "/api/messages/" + recipientId, {
       method: "POST",
       headers: {
         Accept: "application/json",

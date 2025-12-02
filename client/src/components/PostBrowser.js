@@ -52,15 +52,19 @@ const PostBrowser = (props) => {
       );
     }
 
-    if (data.data.length < 10) {
-      setEnd(true);
-    }
+  setLoading(false);
 
-    setLoading(false);
-    if (!data.error) {
-      setPosts([...posts, ...data.data]);
-      setCount(data.count);
-    }
+if (data?.data) {
+  if (data.data.length < 10) {
+    setEnd(true);
+  }
+  setPosts([...posts, ...data.data]);
+  setCount(data.count || 0);
+} else if (data?.error) {
+  console.error("API error:", data.error);
+  // Optionally, show an alert to user or set some error state
+}
+
   };
 
   useEffect(() => {

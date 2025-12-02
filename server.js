@@ -16,14 +16,18 @@ dotenv.config();
 const app = express();
 const httpServer = http.createServer(app);
 
-// ------------------- 1. CONFIGURATION -------------------
-// Add all your Vercel URLs here. 
-// ⚠️ IMPORTANT: No trailing slash "/" at the end of URLs!
+// ------------------- 1. CORS CONFIGURATION -------------------
+// Add all your frontend URLs here
 const allowedOrigins = [
   "https://full-stack-social-media-app-view.vercel.app",
-  "https://full-stack-social-media-app-three.vercel.app", // The one you mentioned
-  "http://localhost:3000" // For local testing
+  "https://full-stack-social-media-app-three.vercel.app",
+  "http://localhost:3000" // for local testing
 ];
+
+// Middleware for REST API CORS
+app.use(
+  cors()
+);
 
 // ------------------- 2. SOCKET.IO SETUP -------------------
 const io = require("socket.io")(httpServer, {
@@ -44,11 +48,6 @@ mongoose
   .catch((err) => console.log("MongoDB error:", err));
 
 // ------------------- 4. MIDDLEWARE -------------------
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true
-}));
-
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -65,9 +64,9 @@ app.use("/api/users", users);
 app.use("/api/comments", comments);
 app.use("/api/messages", messages);
 
-// ------------------- 7. ROOT ROUTE (Health Check) -------------------
+// ------------------- 7. ROOT ROUTE -------------------
 app.get("/", (req, res) => {
-  res.json({ message: "Render Backend is Running!" });
+  res.json({ message: "Backend is Running!" });
 });
 
 // ------------------- 8. START SERVER -------------------

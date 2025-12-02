@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { signup } from "../../api/users";
+
 import { loginUser } from "../../helpers/authHelper";
 import { useNavigate, Link } from "react-router-dom";
 import Copyright from "../Copyright";
@@ -22,20 +23,18 @@ const SignupView = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const errors = validate();
-    if (Object.keys(errors).length !== 0) return;
+  const data = await signup(formData);
 
-    const data = await signup(formData);
+  if (data.error) {
+    setServerError(data.error);
+  } else {
+    loginUser(data);
+    navigate("/");
+  }
+};
 
-    if (data.error) {
-      setServerError(data.error);
-    } else {
-      loginUser(data);
-      navigate("/");
-    }
-  };
 
   const validate = () => {
     const errors = {};

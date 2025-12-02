@@ -30,17 +30,19 @@ const LoginView = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+ const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    const data = await login(formData);
-    if (data.error) {
-      setServerError(data.error);
-    } else {
-      loginUser(data);
-      navigate("/");
-    }
-  };
+  const data = await login(formData);
+
+  if (data.error) {
+    setServerError(data.error);
+  } else {
+    loginUser(data);
+    navigate("/");
+  }
+};
+
 
   return (
     <Container maxWidth={"xs"} sx={{ mt: 6 }}>

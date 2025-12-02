@@ -69,6 +69,8 @@ const PostCard = (props) => {
   };
 
   const handleEditPost = async (e) => {
+      e.preventDefault(); // <--- YOU NEED THIS LINE
+
     e.stopPropagation();
     setEditing(!editing);
   };
