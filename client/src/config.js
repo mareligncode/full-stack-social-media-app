@@ -8,4 +8,4 @@
 
 // export { BASE_URL };
 // src/config.js
-export const BASE_URL = "https://full-stack-social-media-app-view-3.onrender.com";
+export const BASE_URL = "https://full-stack-social-media-app-2.onrender.com";
