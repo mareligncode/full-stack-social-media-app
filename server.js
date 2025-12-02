@@ -24,12 +24,13 @@ const allowedOrigins = [
 ];
 
 app.use(
-  cors({
-    origin: allowedOrigins,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-  })
-);
+  cors())
+//     {
+//     origin: allowedOrigins,
+//     methods: ["GET", "POST", "PUT", "DELETE"],
+//     credentials: true,
+//   })
+// );
 
 // ------------------- 2. SOCKET.IO SETUP -------------------
 const io = require("socket.io")(httpServer, {
